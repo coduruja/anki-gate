@@ -1,0 +1,11 @@
+{
+  "name": "anki-gate",
+  "owner": { "name": "Coduruja" },
+  "plugins": [
+    {
+      "name": "anki-gate",
+      "source": "./",
+      "description": "Blocks each prompt until you answer an Anki flashcard."
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "anki-gate",
+  "version": "0.1.0",
+  "description": "Blocks each prompt until you answer an Anki flashcard.",
+  "author": { "name": "Coduruja" }
+}
