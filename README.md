@@ -16,16 +16,16 @@ Each Anki answer earns one message credit. On every prompt, a `UserPromptSubmit`
 
 ## Turning the gate off
 
-`/anki-gate` switches the gate without restarting Claude Code. The hook runs it and answers on the spot, so it never reaches the model and is never blocked.
+The `/anki-gate:` commands switch the gate without restarting Claude Code. The hook runs them and answers on the spot, so they never reach the model and are never blocked.
 
 | Command | What it does |
 | --- | --- |
-| `/anki-gate off` | Turns the gate off until `/anki-gate on` |
-| `/anki-gate pause 2h` | Turns the gate off for `30m`, `2h`, `1d` or any other length in m, h or d |
-| `/anki-gate on` | Turns the gate back on |
-| `/anki-gate status` | Shows whether the gate is on and how many credits are banked |
+| `/anki-gate:off` | Turns the gate off until `/anki-gate:on` |
+| `/anki-gate:pause 2h` | Turns the gate off for `30m`, `2h`, `1d` or any other length in m, h or d |
+| `/anki-gate:on` | Turns the gate back on |
+| `/anki-gate:status` | Shows whether the gate is on and how many credits are banked |
 
-The switch lives in the state file, so it holds for every session at once. Answers given while the gate is off still count once it is back on.
+The switch lives in the state file, so it holds for every session at once. While the gate is off, prompts spend no credits, and answers given meanwhile are banked once it is back on.
 
 This covers Claude Code in the terminal, in the IDEs, and in the **Code** tab of the Claude desktop app. It doesn't cover the desktop app's chat tab or claude.ai, because neither runs hooks.
 
