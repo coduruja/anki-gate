@@ -2,7 +2,7 @@
 """UserPromptSubmit hook for Claude Code that gates each prompt behind Anki answers.
 
 Holds the AnkiConnect client, the state file (message credits, the time answers
-were last counted, and the off switch), the `/anki-gate` command handler, and the
+were last counted, and the off switch), the `/anki-gate:<action>` command handler, and the
 entry point Claude Code runs on every prompt.
 """
 
@@ -23,7 +23,8 @@ STATE_DIR = Path(
     os.environ.get("CLAUDE_PLUGIN_DATA") or Path.home() / ".claude" / "anki-gate"
 )
 STATE_FILE = STATE_DIR / "state.json"
-COMMAND = "/anki-gate"
+# Each action is its own plugin command, `/anki-gate:<action>`.
+COMMAND = "/anki-gate:"
 DAY_MS = 86_400_000
 UNITS_MS = {"m": 60_000, "h": 3_600_000, "d": DAY_MS}
 
@@ -166,13 +167,13 @@ def gate():
 
 
 def run_command(args):
-    """Carry out `/anki-gate` with `args`.
+    """Carry out an `/anki-gate:<action>` command.
 
     Accepts `on`, `off`, `pause <n><m|h|d>` and `status`; anything else returns
     the usage line.
 
     Args:
-        args: The words typed after `/anki-gate`.
+        args: The action, then the words typed after the command.
 
     Returns:
         The line to show the user.
@@ -187,7 +188,7 @@ def run_command(args):
     elif action == "pause" and len(args) == 2 and (match := re.fullmatch(r"(\d+)([mhd])", args[1])):
         state["off_until"] = now_ms + int(match[1]) * UNITS_MS[match[2]]
     elif action != "status":
-        return "anki-gate: use /anki-gate on | off | pause <30m|2h|1d> | status"
+        return "anki-gate: use /anki-gate:on, /anki-gate:off, /anki-gate:pause <30m|2h|1d> or /anki-gate:status"
     if action != "status":
         _save_state(state)
 
@@ -211,9 +212,9 @@ def _emit(payload):
 
 
 def main():
-    """Handle `/anki-gate`, or let the prompt through or block it per `gate`.
+    """Handle `/anki-gate:<action>`, or let the prompt through or block it per `gate`.
 
-    Runs `/anki-gate` here and blocks it, so the command never reaches the model.
+    Runs `/anki-gate:<action>` here and blocks it, so the command never reaches the model.
     Lets other prompts through with the credits left shown, or with a warning
     when Anki can't be reached.
     """
@@ -222,8 +223,8 @@ def main():
     except ValueError:
         prompt = ""
     words = prompt.split()
-    if words and words[0] == COMMAND:
-        _emit({"decision": "block", "reason": run_command(words[1:])})
+    if words and words[0].startswith(COMMAND):
+        _emit({"decision": "block", "reason": run_command([words[0].removeprefix(COMMAND), *words[1:]])})
 
     status, detail = gate()
     if status == "credit":
